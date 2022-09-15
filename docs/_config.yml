@@ -22,7 +22,7 @@ title: Dazbo's GCP Skillsboost Challenge Lab Walkthroughs
 email: derailed.dash@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
   My experience and walkthroughs with the GCP Skillsboost Challange Labs.
-repository: derailed-dash/gcp-challenge-labs
+repository: derailed-dash/derailed-dash.github.io
 baseurl: /gcp-challenge-labs # the subpath of your site, e.g. /blog
 url: https://derailed-dash.github.io # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: DerailedDash
