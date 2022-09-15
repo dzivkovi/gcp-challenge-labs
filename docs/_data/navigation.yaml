@@ -1,0 +1,6 @@
+# If a link should appear on the main nav, set mainnav: True
+docs_title: Navigation
+pages:
+- name: Create and Manage Cloud Resources
+  link: /create-and-manage-cloud-resources
+
