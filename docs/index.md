@@ -4,7 +4,7 @@ title: Main
 ---
 # Quests and Challenge Labs
 
-Google provides an online learning platform called Google [Cloud Skills Boost](https://www.cloudskillsboost.google/), formerly known as QwikLabs.
+Google provides an online learning platform called Google [Cloud Skills Boost](https://www.cloudskillsboost.google/){:target="_blank"}, formerly known as QwikLabs.
 
 On this platform, you can follow training courses aligned to learning paths, particular products, or particular solutions.
 

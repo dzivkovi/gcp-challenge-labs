@@ -1,6 +1,6 @@
 # Create and Manage Cloud Resources: Challenge Lab
 
-[Challenge Lab](https://www.cloudskillsboost.google/focuses/10258?parent=catalog)
+See [Challenge Lab](https://www.cloudskillsboost.google/focuses/10258?parent=catalog)
 
 # Objective
 
@@ -90,13 +90,36 @@ Alas, the lab won't properly update progress if you do the above command.
 
 ## Create an HTTP(s) Load Balancer in Front of Two Web Servers
 
+### Objectives
+
+We're asked to create a fault-tolerant environment of two nginx webservers, accessible via an HTTP load balancer.  
+
+We're given explicit requirements:
+
+- Create an instance template.
+- Create a target pool.
+- Create a managed instance group.
+- Create a firewall rule named as `some-name` to allow traffic (80/tcp).
+- Create a health check.
+- Create a backend service, and attach the managed instance group with named port (http:80).
+- Create a URL map, and target the HTTP proxy to route requests to your URL map.
+- Create a forwarding rule.
+
+### Anatomy of a Load Balancer
+
+We're going to build something like this:
+
+<img src="{{'/assets/images/http-to-mig-lb.png' | relative_url }}" alt="Load Balancer and MIG" style="width:800px;" />
+
+### My Solution
+
 We'll continue to use the environment variables defined in the previous part.  Additionally, we need a specific firewall name, which is supplied in the lab.  (Yours will probably be different.)
 
 ```bash
 fw_rule=grant-tcp-rule-667
 ```
 
-Don't forget to change line so that the rule matches what was supplied in your lab.
+Don't forget to change the above line so that the rule matches what was supplied in your lab.
 
 First, let's create a `startup.sh` using the supplied start-up instructions:
 
@@ -111,7 +134,9 @@ sed -i -- 's/nginx/Google Cloud Platform -- '"\$HOSTNAME"'/' /var/www/html/index
 EOF
 ```
 
-Now we create an instance template:
+This startup script installs nginx on a the Linux machine, and then starts the nginx service.
+
+Now we create an **instance template**:
 
 ```bash
 gcloud compute instance-templates create nucleus-nginx-template \
@@ -125,15 +150,17 @@ gcloud compute instance-templates create nucleus-nginx-template \
 Here I've:
 
 - Added two network tags, called `allow-health-check` and `web`. Strictly, the lab doesn't require these.  But I find it good practice, and allows us to wire up two separate granular firewall rules, if we want to.
-- Defined a metadata item called `startup-script`, pointing to our local `startup.sh` file.
+- Defined a metadata item called `startup-script`, pointing to our local `startup.sh` file. Thus, each new instance we create from this template will us the startup.sh we created earlier.
 
-Now create target pool, as explicitly requested by the lab:
+Now create a **target pool**, as explicitly requested by the lab:
 
 ```bash
 gcloud compute target-pools create nginx-pool --region=$region
 ```
 
-Now, as required, we create a managed instance group from our template, with two instances:
+It's worth noting that a _target pool_ is a legacy approach, and we wouldn't normally use a _target pool_ with an HTTP(S) load balancer.  But this lab requires it.  Also note that when we use a _target pool_, we'll also have to use a _legacy HTTP healthy check_.
+
+Now, as required, we create a **managed instance group** from our template, with two instances:
 
 ```bash
 gcloud compute instance-groups managed create nginx-group \
@@ -152,14 +179,14 @@ The lab says we need _"to create a backend service, and attach the managed insta
 
 It turns out that if you don't add a named port to the managed instance group, then you **can't successfully complete the lab.**  This took me quite some time to work out.
 
-So let's add the named port:
+So let's add the **named port**:
 
 ```bash
 gcloud compute instance-groups managed set-named-ports nginx-group \
   --named-ports http:80 --region=$region
 ```
 
-Now we create the firewall rule, with the lab-supplied name:
+Now we create the **firewall rule**, with the lab-supplied name:
 
 ```bash
 gcloud compute firewall-rules create $fw_rule \
@@ -173,13 +200,13 @@ gcloud compute firewall-rules create $fw_rule \
 
 Note that although the lab doesn't ask us to, I've set this firewall rule so that it only applies to instances with the `web` tag. And, of course, our instances do have the `web` tag.
 
-Now we'll create the health check:
+Now we'll create the **health check**:
 
 ```bash  
 gcloud compute health-checks create http http-basic-check --port 80
 ```
 
-Now create a global backend service for HTTP uses our health check:
+Now create a global **backend service** for HTTP uses our health check:
 
 ```bash
 gcloud compute backend-services create nginx-backend-service \
@@ -188,7 +215,7 @@ gcloud compute backend-services create nginx-backend-service \
   --global
 ```
 
-Now we add our MIG to the backend service:
+Now we **add our MIG to the backend service**:
 
 ```bash
 gcloud compute backend-services add-backend nginx-backend-service \
@@ -197,19 +224,19 @@ gcloud compute backend-services add-backend nginx-backend-service \
   --global
 ```
   
-Create the URL map, such that any HTTP requestes are forwarded to our backend:
+Create the **URL map**, such that any HTTP requestes are forwarded to our backend:
 
 ```bash
 gcloud compute url-maps create web-map-http --default-service nginx-backend-service
 ```
 
-Now we create a target HTTP proxy to route requests to the URL map
+Now we create a **target HTTP proxy** to route requests to the URL map
 
 ```bash
 gcloud compute target-http-proxies create http-lb-proxy --url-map web-map-http
 ```
 
-Finally, create global forwarding rule to route incoming requests to the proxy:
+Finally, create global **forwarding rule** to route incoming requests to the proxy:
 
 ```bash
 gcloud compute forwarding-rules create http-forwarding-rule \
