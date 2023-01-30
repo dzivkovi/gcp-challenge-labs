@@ -8,4 +8,6 @@ pages:
   members:
   - name: Create and Manage Cloud Resources
     link: /create-and-manage-cloud-resources
+  - name: Perform Foundational Data, ML, and AI Tasks
+    link: /foundational-data-ml-ai  
 
