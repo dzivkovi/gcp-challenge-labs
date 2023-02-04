@@ -2,7 +2,7 @@
 
 See [Challenge Lab](https://partner.cloudskillsboost.google/focuses/13318?parent=catalog)
 
-# Objective
+## Objective
 
 This lab is in three parts:
 

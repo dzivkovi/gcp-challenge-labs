@@ -9,5 +9,6 @@ pages:
   - name: Create and Manage Cloud Resources
     link: /create-and-manage-cloud-resources
   - name: Perform Foundational Data, ML, and AI Tasks
-    link: /foundational-data-ml-ai  
-
+    link: /foundational-data-ml-ai
+  - name: Build and Optimise Data Warehouses with BigQuery
+    link: /dw-with-bq
