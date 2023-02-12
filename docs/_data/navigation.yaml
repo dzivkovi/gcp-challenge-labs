@@ -12,3 +12,6 @@ pages:
     link: /foundational-data-ml-ai
   - name: Build and Optimise Data Warehouses with BigQuery
     link: /dw-with-bq
+  - name: Engineer Data in Google Cloud
+    link: /engineer-data
+  

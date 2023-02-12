@@ -1,6 +1,6 @@
 # Create and Manage Cloud Resources: Challenge Lab
 
-See [Challenge Lab](https://www.cloudskillsboost.google/focuses/10258?parent=catalog)
+See [Challenge Lab](https://www.cloudskillsboost.google/focuses/10258?parent=catalog){:target="_blank"}
 
 # Objective
 

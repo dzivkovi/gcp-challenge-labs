@@ -1,6 +1,6 @@
 # Build and Optimise Data Warehouses with BigQuery
 
-See [Challenge Lab](https://partner.cloudskillsboost.google/focuses/14827?parent=catalog)
+See [Challenge Lab](https://partner.cloudskillsboost.google/focuses/14827?parent=catalog){:target="_blank"}
 
 ## Overview
 
@@ -14,9 +14,7 @@ Topics tested:
 - Add new columns to this table with appropriate data types.
 - Run a series of JOINS to populate these new columns with data drawn from other tables.
 
-# Objectives Overview
-
-This lab is in three parts:
+## Objectives Overview
 
 1. [Create Date-Partitioned Table](#create-date-partitioned-table)
 1. [Add Columns to the Schema](#add-columns-to-the-schema)
