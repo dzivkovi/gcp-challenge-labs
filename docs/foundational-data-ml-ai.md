@@ -1,8 +1,8 @@
 # Perform Foundational Data, ML, and AI Tasks in Google Cloud
 
-See [Challenge Lab](https://partner.cloudskillsboost.google/focuses/13318?parent=catalog)
+See [Challenge Lab](https://partner.cloudskillsboost.google/focuses/13318?parent=catalog){:target="_blank"}
 
-# Objective
+## Objective
 
 This lab is in three parts:
 
