@@ -130,7 +130,7 @@ It takes a couple of minutes.
 
 ### Objectives
 
-You can do any of the three ML API tasks.  But here, I@ve got with the **Natural Language API** task. For this task, we need to analyse the text:
+You can do any of the three ML API tasks.  But here, I've gone with the **Natural Language API** task. For this task, we need to analyse the text:
 
 _"Old Norse texts portray Odin as one-eyed and long-bearded, frequently wielding a spear named Gungnir and wearing a cloak and a broad hat."_
 
