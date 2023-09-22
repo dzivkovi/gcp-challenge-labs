@@ -6,6 +6,8 @@ pages:
   mainnav: True
 - name: Main
   members:
+  - name: Perform Foundational Infrastructure Tasks in Google Cloud
+    link: /foundational-infra-tasks
   - name: Create and Manage Cloud Resources
     link: /create-and-manage-cloud-resources
   - name: Perform Foundational Data, ML, and AI Tasks
