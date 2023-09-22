@@ -16,4 +16,6 @@ pages:
     link: /dw-with-bq
   - name: Engineer Data in Google Cloud
     link: /engineer-data
+  - name: Cloud Dataproc Cluster Operations and Maintenance
+    link: /cloud-dataproc-operations    
   
