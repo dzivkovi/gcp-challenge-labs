@@ -12,6 +12,8 @@ pages:
     link: /setup-cloud-env
   - name: Create and Manage Cloud Resources
     link: /create-and-manage-cloud-resources
+  - name: Automating Infrastructure on Google Cloud with Terraform
+    link: /automating-with-terraform
   - name: Perform Foundational Data, ML, and AI Tasks
     link: /foundational-data-ml-ai
   - name: Build and Optimise Data Warehouses with BigQuery
