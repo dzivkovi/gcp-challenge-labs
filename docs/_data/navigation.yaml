@@ -21,5 +21,7 @@ pages:
   - name: Engineer Data in Google Cloud
     link: /engineer-data
   - name: Cloud Dataproc Cluster Operations and Maintenance
-    link: /cloud-dataproc-operations    
+    link: /cloud-dataproc-operations
+  - name: Monitor and Log with Google Cloud Operations Suite
+    link: /monitor-and-log-with-gco
   
