@@ -18,11 +18,11 @@ In this lab, we're going to:
 
 We're given some tips. We're told that:
 
-1. The startup script for the Compute Instance is in the Compute Instance metadata key called startup_script.
+1. The startup script for the Compute Instance is in the Compute Instance metadata key called `startup_script`.
 2. The Compute Instance must have the Cloud Monitoring agent installed and the Go application requires environment variables to be configured with the Google Cloud project, the instance ID, and the compute engine zone.
-1. The Video Queue length monitoring Go application writes the queue length metric data to a metric called custom.googleapis.com/opencensus/my.videoservice.org/measure/input_queue_size associated with the gce_instance resource type.
+1. The Video Queue length monitoring Go application writes the queue length metric data to a metric called `custom.googleapis.com/opencensus/my.videoservice.org/measure/input_queue_size` associated with the gce_instance resource type.
 1. To create the custom log based metric, the easiest filter to use is the advanced filter query textPayload=~"file_format\: ([4,8]K).*". That is a regular expression that matches all Cloud Operations events for the two high resolution video formats you are interested in. You can use the same regular expression and configure labels in the metric definition, which creates a separate time series for each of the two high resolution formats.
-1. You must use the name provided for the custom log based metric that monitors the rate at which high resolution videos are processed: Custom Metric Name.
+1. You must use the name provided for the custom log based metric that monitors the rate at which high resolution videos are processed: `Custom Metric Name`.
 
 # My Solution
 
@@ -31,20 +31,80 @@ As usual, I'll start by defining some variables we can use throughout this chall
 ```bash
 gcloud auth list
 
-region=ENTER REGION
-zone=ENTER ZONE
-prj=ENTER PRJ ID
+region=us-west1
+zone=us-west1-c
+prj=qwiklabs-gcp-02-910e60f74c10
+mach=e2-medium
 ```
 
 ## Task 1 - Configure Cloud Monitoring
 
+A basic Cloud Monitoring dashboard, called `Media_Dashboard` is already made available, but we have to enable Cloud Monitoring in our project.
+
+So navigate to `Monitoring` from the Console.
+
 ## Task 2 - Configure a Compute Instance to generate Custom Cloud Monitoring metrics
+
+We're told we have a monitoring service which creates a custom metric called `opencensus/my.videoservice.org/measure/input_queue_size`. This service runs as a `Go` application on a Compute Engine instance called `video-queue-monitor`. The instance has already been deployed, and a startup-script launches the monitoring application.
+
+Edit the instance, navigate to **Management -> Metadata**, and here we'll edit the `startup-script`.
+
+You'll see that the script requires you to supply the project ID, instance ID, and zone. We're given the project ID and zone already.  We can get the instance Id from the **Basic information** view of the VM.
+
+Save your changes, and now reset the instance.
+
+Then check tha thte metric `input_queue_size` is being written, using the **Metrics Explorer**.  Note that it might take a few minutes before the metric is visible.  So refresh the **Metrics Explorer**, then from the Metrics dropdown, you can search for `input_queue`.
+
+![Metric input_queue_size](/assets/images/metric_input_queue.png)
+
+![Metrics Explorer input_queue](/assets/images/metrics_explorer_input_queue.png)
 
 ## Task 3 - Create a custom metric using Cloud Operations logging events
 
+Navigate to **Logging -> Logs Explorer**.
+
+Create metric
+
+- Type = Counter (default)
+- Name = `large_video_upload_rate` (yours might be different)
+- textPayload=~"file_format\: ([4,8]K).*"
+
+![Metrics Explorer input_queue](/assets/images/logs-based-metric.png)
+
 ## Task 4 - Add custom metrics to the Media Dashboard in Cloud Operations Monitoring
+
+1. Metrics Scope -> Dashboard.
+1. Select `Media_Dashboard` from the list of dashboards.
+1. Add widget -> Line
+1. Select a metric -> Metric dropdown -> Search for "queue" to find your custom metric. Apply.
+1. Apply again.
+1. Add widget -> Line
+1. Select a metric -> Metric dropdown -> Uncheck "Active resources & metrics" -> Search for `large` (or whatever your logs-based metric was called), to find your metric. Apply.
+1. Apply again.
 
 ## Task 5 - Create a Cloud Operations alert based on the rate of high resolution video file uploads
 
+Here we need to trigger an alert if our upload rate exceeds the specified value.
+
+1. Logging -> Logs-Based Metrics
+1. Select the three dots next to the logs-based metric for video upload rate, and select `Create alert from metric`.
+
+New condition
+- Rolling window = 1 minute
+- Rolling window function = rate
+- Time series aggregation = none
+
+Configure trigger
+- Type = Threshold
+- Alert trigger = Any time series violates
+- Threshold position = Above threshold
+- Threshodl value = the value you've been given
+
+Noficiations
+- You can turn off `Use notification channel`. Or, if you prefer, you could have it send notifications to an email address.
+
+Name the alert policy = `Uploads exceeded threshold`, but you can use whatever you like!
+
+- Create policy.
 
 And we're done!
