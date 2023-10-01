@@ -16,7 +16,7 @@ In this lab, we're going to:
 
 # General Guidance
 
-We're given some tips. We're told that:
+We're given some tips. These definitely make life easier! We're told that:
 
 1. The startup script for the Compute Instance is in the Compute Instance metadata key called `startup_script`.
 2. The Compute Instance must have the Cloud Monitoring agent installed and the Go application requires environment variables to be configured with the Google Cloud project, the instance ID, and the compute engine zone.
@@ -26,34 +26,25 @@ We're given some tips. We're told that:
 
 # My Solution
 
-As usual, I'll start by defining some variables we can use throughout this challenge:
-
-```bash
-gcloud auth list
-
-region=us-west1
-zone=us-west1-c
-prj=qwiklabs-gcp-02-910e60f74c10
-mach=e2-medium
-```
+This is a fairly quick lab, so I didn't bother doing it with the Cloud CLI.  All the steps described below are done using the Google Cloud Console.
 
 ## Task 1 - Configure Cloud Monitoring
 
-A basic Cloud Monitoring dashboard, called `Media_Dashboard` is already made available, but we have to enable Cloud Monitoring in our project.
+A basic Cloud Monitoring dashboard, called `Media_Dashboard` has already been made available to us, but we have to **enable Cloud Monitoring** in our project.
 
-So navigate to `Monitoring` from the Console.
+This is super-easy to do!  Just navigate to `Monitoring` from the Console.
 
 ## Task 2 - Configure a Compute Instance to generate Custom Cloud Monitoring metrics
 
-We're told we have a monitoring service which creates a custom metric called `opencensus/my.videoservice.org/measure/input_queue_size`. This service runs as a `Go` application on a Compute Engine instance called `video-queue-monitor`. The instance has already been deployed, and a startup-script launches the monitoring application.
+We're told we have a monitoring service which creates a _custom metric_ called `opencensus/my.videoservice.org/measure/input_queue_size`. This service runs as a _Go_ application on a Compute Engine instance called `video-queue-monitor`. The _Go_ application uses _OpenCensus_ to write custom metrics to GCO. The instance has already been deployed for us, and a **startup-script** installs and runs the monitoring application. The startup-script is incomplete.
 
-Edit the instance, navigate to **Management -> Metadata**, and here we'll edit the `startup-script`.
+From the console, edit the instance, and navigate to **Management -> Metadata**. Look at the `startup-script`.
 
 You'll see that the script requires you to supply the project ID, instance ID, and zone. We're given the project ID and zone already.  We can get the instance Id from the **Basic information** view of the VM.
 
-Save your changes, and now reset the instance.
+Add these values, save your changes, and now reset the instance.
 
-Then check tha thte metric `input_queue_size` is being written, using the **Metrics Explorer**.  Note that it might take a few minutes before the metric is visible.  So refresh the **Metrics Explorer**, then from the Metrics dropdown, you can search for `input_queue`.
+Then check tha metric `input_queue_size` is being written, in the **Metrics Explorer**.  Note that it might take a few minutes before the metric is visible.  So refresh the **Metrics Explorer**, then from the Metrics dropdown, you can search for `input_queue`.
 
 ![Metric input_queue_size](/assets/images/metric_input_queue.png)
 
@@ -61,50 +52,59 @@ Then check tha thte metric `input_queue_size` is being written, using the **Metr
 
 ## Task 3 - Create a custom metric using Cloud Operations logging events
 
+Here we're going to create a custom metric from logs. We're told that a Cloud Function creates a log entry that includes metadata.  We need to create a custom metric by reading the log entries, and using these to determine the rate at which high resolution video files are uploaded.
+
 Navigate to **Logging -> Logs Explorer**.
 
-Create metric
+Click on **Create metric**. Use the following values:
 
-- Type = Counter (default)
-- Name = `large_video_upload_rate` (yours might be different)
-- textPayload=~"file_format\: ([4,8]K).*"
+- `Type = Counter (the default)`
+- `Name = large_video_upload_rate` (your metric name might be different)
+- `textPayload=~"file_format\: ([4,8]K).*"`
+
+(Note that we've already been given the advanced filter query.)
 
 ![Metrics Explorer input_queue](/assets/images/logs-based-metric.png)
 
 ## Task 4 - Add custom metrics to the Media Dashboard in Cloud Operations Monitoring
 
-1. Metrics Scope -> Dashboard.
-1. Select `Media_Dashboard` from the list of dashboards.
-1. Add widget -> Line
+Select Monitoring -> Metrics Scope -> **Dashboard**. Then select `Media_Dashboard` from the list of dashboards. (This dashboard has been created for us already.)
+
+### First Chart
+
+1. Add widget -> Visualiation -> Line
 1. Select a metric -> Metric dropdown -> Search for "queue" to find your custom metric. Apply.
 1. Apply again.
-1. Add widget -> Line
+
+### Second Chart
+
+1. Add widget -> Visualiation -> Line
 1. Select a metric -> Metric dropdown -> Uncheck "Active resources & metrics" -> Search for `large` (or whatever your logs-based metric was called), to find your metric. Apply.
 1. Apply again.
 
 ## Task 5 - Create a Cloud Operations alert based on the rate of high resolution video file uploads
 
-Here we need to trigger an alert if our upload rate exceeds the specified value.
+Here we need to trigger an alert if our upload rate exceeds the specified value. We can create an alert using the logs-based metric we created previously
 
-1. Logging -> Logs-Based Metrics
-1. Select the three dots next to the logs-based metric for video upload rate, and select `Create alert from metric`.
+Navigate to **Logging -> Logs-Based Metrics**.  Select the three dots next to the logs-based metric for video upload rate, and select `Create alert from metric`.
 
-New condition
+Select **New condition**, and use these parameters:
 - Rolling window = 1 minute
 - Rolling window function = rate
 - Time series aggregation = none
 
-Configure trigger
+Select **Configure trigger**, and use these parameters:
 - Type = Threshold
 - Alert trigger = Any time series violates
 - Threshold position = Above threshold
 - Threshodl value = the value you've been given
 
-Noficiations
-- You can turn off `Use notification channel`. Or, if you prefer, you could have it send notifications to an email address.
+Select **Notifications**:
+- You can turn off `Use notification channel`.
+- Or, if you prefer, you could have it send notifications to an email address.
 
-Name the alert policy = `Uploads exceeded threshold`, but you can use whatever you like!
+**Name the alert policy**. You can choose whatever you like.  I called it `Uploads exceeded threshold`.
 
-- Create policy.
+Finally, click on **Create policy**.
 
-And we're done!
+And that's it!
