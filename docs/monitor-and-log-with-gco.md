@@ -72,13 +72,13 @@ Select Monitoring -> Metrics Scope -> **Dashboard**. Then select `Media_Dashboar
 
 ### First Chart
 
-1. Add widget -> Visualiation -> Line
+1. Add widget -> Visualisation -> Line
 1. Select a metric -> Metric dropdown -> Search for "queue" to find your custom metric. Apply.
 1. Apply again.
 
 ### Second Chart
 
-1. Add widget -> Visualiation -> Line
+1. Add widget -> Visualisation -> Line
 1. Select a metric -> Metric dropdown -> Uncheck "Active resources & metrics" -> Search for `large` (or whatever your logs-based metric was called), to find your metric. Apply.
 1. Apply again.
 
