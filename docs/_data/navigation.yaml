@@ -22,6 +22,8 @@ pages:
     link: /engineer-data
   - name: Cloud Dataproc Cluster Operations and Maintenance
     link: /cloud-dataproc-operations
+  - name: Generative AI with Vertex AI - Text Prompt Design
+    link: /gen-ai-vertex-ai
   - name: Monitor and Log with Google Cloud Operations Suite
     link: /monitor-and-log-with-gco
   
