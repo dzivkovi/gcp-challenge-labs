@@ -142,7 +142,7 @@ Now we create an **instance template**:
 gcloud compute instance-templates create nucleus-nginx-template \
   --tags=allow-health-check,web \
   --network=$network \
-  --machine-type=$instance_type --image-family=debian-11 --image-project=debian-cloud \
+  --machine-type=$instance_type --image-family=debian-11 \
   --region=$region \
   --metadata-from-file=startup-script=startup.sh
 ```

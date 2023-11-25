@@ -8,6 +8,8 @@ pages:
   members:
   - name: Perform Foundational Infrastructure Tasks in Google Cloud
     link: /foundational-infra-tasks
+  - name: Configuring Google Cloud Networking
+    link: /configure-networking
   - name: Set Up and Configure a Cloud Environment in Google Cloud
     link: /setup-cloud-env
   - name: Create and Manage Cloud Resources
