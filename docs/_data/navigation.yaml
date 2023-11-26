@@ -10,6 +10,8 @@ pages:
     link: /foundational-infra-tasks
   - name: Configuring Google Cloud Networking
     link: /configure-networking
+  - name: Configuring VPN Connectivity between Google Cloud and AWS
+    link: /configure-vpn-to-aws
   - name: Set Up and Configure a Cloud Environment in Google Cloud
     link: /setup-cloud-env
   - name: Create and Manage Cloud Resources

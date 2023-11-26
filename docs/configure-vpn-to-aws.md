@@ -15,20 +15,18 @@ The tasks are:
 1. [Create an AWS Customer gateway and a Target gateway](#create-an-aws-customer-gateway-and-a-target-gateway)
 1. [Create a VPN connection with dynamic routing on AWS](#create-a-vpn-connection-with-dynamic-routing-on-aws)
 1. [Create an external peer VPN gateway and VPN tunnels on Google Cloud](#create-an-external-peer-vpn-gateway-and-vpn-tunnels-on-google-cloud)
-1. [Add BGP peers to the Cloud Router]()
-1. [Verify the configuration]()
+1. [Add BGP peers to the Cloud Router](#add-bgp-peers-to-the-cloud-router)
+1. [Verify the configuration](#verify-the-configuration)
 
 # My Solution
 
-This is a pretty tough lab!
+This lab was tough!! It took me three tries before I worked out what I'd been doing wrong! But finally, I have a repeatable approach, documented here for you!  The instructions will make use of the gcloud CLI, which you can run from the Cloud Shell.
 
-We will setup an HA VPN gateway from GCP to AWS, using an _AWS target gateway_ of type _virtual private gateway_.
-
-I prefer to use the Cloud Shell and gcloud CLI, because it makes the steps much more repeatable.
+The goal is to setup an HA VPN gateway from GCP to AWS, using an _AWS target gateway_ of type _virtual private gateway_.
 
 ## Prep
 
-Note that the Google Cloud VPC has already been created.
+Note that the Google Cloud VPC has already been created. As has a peer VPC on the AWS side.
 
 Let's start by defining some variables we can use throughout this challenge. Run the following from the Cloud Shell:
 
@@ -83,9 +81,9 @@ Start by obtaining the VPC ID of your AWS VPC:
 
 We will:
 
-- **Create two _AWS Customer gateways_** with dynamic routing. Run the supplied command, and each time, pass in one of the two external IP addresses for each interface on our Google Cloud VPN Gateway. Make a note of the customer gateway IDs, as we'll need them later. \
+- **Create two _AWS Customer gateways_** with dynamic routing. Run the supplied command, and each time, pass in one of the two external IP addresses for each interface on our Google Cloud VPN Gateway. Make a note of the **customer gateway IDs**, as we'll need them later. \
 ![Create AWS customer gateways](/assets/images/create_aws_customer_gw.png)
-- **Create one _virtual private gateway_** (the VPN endpoint on the AWS side). The gateway exposes two intefaces. Make a note of the VPN gateway ID assigned.
+- **Create one _virtual private gateway_** (the VPN endpoint on the AWS side). The gateway exposes two intefaces. Make a note of the **VPN gateway ID** assigned.
 - Attach the AWS virtual private gateway to the AWS VPC. \
 ![Attach VPN gateway to VPC](/assets/images/aws_attach_vpn_gateway.png)
 
@@ -95,7 +93,9 @@ Here we setup two VPN connections with dynamic routing between the single AWS _v
 
 Note that the four IP `TunnelInsideCidr` addresses are inferrable, based on the IP addresses specified later in the instructions for the tunnels. E.g. if your VPN tunnel first IP address is `169.254.10.2` then the `TunnelInsideCidr` for the corresponding AWS VPN connection will be `169.254.10.0/30`.
 
-You will end up running two commands like this:
+Also, **note that we're using a subnet mask for /30.** You need to remember this later. (And if you get this wrong, you can't complete the lab!!)
+
+You will end up running two commands like those shown below. Remember to substitute your own `customer-gateway-id` values and the `vpn-gateway-id`.
 
 ```bash
 aws ec2 create-vpn-connection \
@@ -117,7 +117,7 @@ Each time, you may need to page down after executing the command, to retrieve th
 aws ec2 describe-vpn-connections
 ```
 
-You can check the VPN connections are available in `VPN Connections` in the AWS Console.
+You can check the VPN connections are available in `VPN Connections` in the AWS Console. It takes a couple of minutes for the VPN connections to become active.
 
 ## Create an external peer VPN gateway and VPN tunnels on Google Cloud
 
@@ -152,52 +152,50 @@ Your GCP VPN gateway only has two interfaces. So we will pair up:
 ```bash
 gcloud compute vpn-tunnels create tunnel-1 \
    --peer-external-gateway=$gcp_external_peer_gw \
-   --peer-external-gateway-interface=0 \
+   --peer-external-gateway-interface=0 --interface=0 \
    --region=$region --router=$cloud_router \
    --ike-version=2 --shared-secret=gcprocks \
-   --vpn-gateway=$vpn_gw \
-   --interface=0
+   --vpn-gateway=$vpn_gw
+
 
 gcloud compute vpn-tunnels create tunnel-2 \
    --peer-external-gateway=$gcp_external_peer_gw \
-   --peer-external-gateway-interface=1 \
+   --peer-external-gateway-interface=1  --interface=0 \
    --region=$region --router=$cloud_router \
    --ike-version=2 --shared-secret=gcprocks \
-   --vpn-gateway=$vpn_gw \
-   --interface=0
+   --vpn-gateway=$vpn_gw
 
 gcloud compute vpn-tunnels create tunnel-3 \
    --peer-external-gateway=$gcp_external_peer_gw \
-   --peer-external-gateway-interface=2 \
+   --peer-external-gateway-interface=2 --interface=1 \
    --region=$region --router=$cloud_router \
    --ike-version=2 --shared-secret=gcprocks \
-   --vpn-gateway=$vpn_gw \
-   --interface=1
+   --vpn-gateway=$vpn_gw
 
 gcloud compute vpn-tunnels create tunnel-4 \
    --peer-external-gateway=$gcp_external_peer_gw \
-   --peer-external-gateway-interface=3 \
+   --peer-external-gateway-interface=3 --interface=1 \
    --region=$region --router=$cloud_router \
    --ike-version=2 --shared-secret=gcprocks \
-   --vpn-gateway=$vpn_gw \
-   --interface=1 
+   --vpn-gateway=$vpn_gw
 ```
 
 ## Add BGP peers to the Cloud Router
 
-Here we can use Cloud Router to establish a BGP session with the peer network over the VPN tunnels. Then, Cloud Router automatically learns teh subnet IP addresses of the Google network, and advertises them to the peer network.
+Here we can use Cloud Router to establish a BGP session with the peer network over the VPN tunnels. Then, Cloud Router automatically learns the subnet IP addresses of the Google network, and advertises them to the peer network.
 
-We have four BGP peers to establish, for each of the four tunnels.
+We have four BGP peers to establish, for each of the four tunnels. Note the `--mask-length=30`, to match the instructions we ran on the AWS side earlier.
 
 ```bash
-# first, add an interface to the Cloud Router for each tunnel
+# First, add an interface to the Cloud Router for each tunnel
+# I'm using a loop to run this four times. 
 for i in {1..4}; do
     gcloud compute routers add-interface $cloud_router \
       --interface-name=int-$i --vpn-tunnel=tunnel-$i --region=$region \
-      --ip-address=169.254.$((i * 10)).2 --mask-length=24
+      --ip-address=169.254.$((i * 10)).2 --mask-length=30
 done
 
-# now add a BGP peer
+# now add four BGP peers
 gcloud compute routers add-bgp-peer $cloud_router \
    --peer-name=aws-conn1-tunn1 --interface=int-1 --peer-ip-address=169.254.10.1 \
    --peer-asn=$aws_asn --region=$region
@@ -213,6 +211,25 @@ gcloud compute routers add-bgp-peer $cloud_router \
 gcloud compute routers add-bgp-peer $cloud_router \
    --peer-name=aws-conn2-tunn2 --interface=int-4 --peer-ip-address=169.254.40.1 \
    --peer-asn=$aws_asn --region=$region   
-
-# second tunnel...
 ```
+
+## Verify the configuration
+
+```bash
+# Verify the router status
+gcloud compute routers get-status cymbal-cloud-router \
+    --region us-east4 \
+    --format='flattened(result.bgpPeerStatus[].name, result.bgpPeerStatus[].ipAddress, result.bgpPeerStatus[].peerIpAddress)'
+
+# List the tunnels
+gcloud compute vpn-tunnels list
+
+# Check the tunnel status
+gcloud compute vpn-tunnels describe tunnel-1 \
+     --region us-east4 \
+     --format='flattened(status,detailedStatus)'
+```
+
+![Tunnel established!](/assets/images/tunnel-established.png)
+
+And finally, we're done!
