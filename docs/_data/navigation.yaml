@@ -10,8 +10,6 @@ pages:
     link: /foundational-infra-tasks
   - name: Configuring Google Cloud Networking
     link: /configure-networking
-  - name: Set Up and Configure a Cloud Environment in Google Cloud
-    link: /setup-cloud-env
   - name: Create and Manage Cloud Resources
     link: /create-and-manage-cloud-resources
   - name: Perform Foundational Data, ML, and AI Tasks
