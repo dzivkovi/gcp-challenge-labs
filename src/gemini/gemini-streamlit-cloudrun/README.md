@@ -10,7 +10,7 @@ pip install -r requirements.txt
 To run the application locally:
 
 ```bash
-streamlit run app.py \
+streamlit run chef.py \
   --browser.serverAddress=localhost \
   --server.enableCORS=false \
   --server.enableXsrfProtection=false \
