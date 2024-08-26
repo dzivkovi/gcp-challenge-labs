@@ -1,19 +1,19 @@
+"""
+This module provides functionality to interact with Google Cloud's Vertex AI
+and Streamlit for generating text responses using the Gemini model.
+"""
 import os
-import streamlit as st
 import logging
 from google.cloud import logging as cloud_logging
+import streamlit as st
 import vertexai
 from vertexai.preview.generative_models import (
     GenerationConfig,
     GenerativeModel,
     HarmBlockThreshold,
     HarmCategory,
-    Part,
 )
-from datetime import (
-    date,
-    timedelta,
-)
+
 # configure logging
 logging.basicConfig(level=logging.INFO)
 # attach a Cloud Logging handler to the root logger
@@ -27,17 +27,33 @@ vertexai.init(project=PROJECT_ID, location=LOCATION)
 
 @st.cache_resource
 def load_models():
-    text_model_pro = GenerativeModel("gemini-1.5-flash")
-    return text_model_pro
+    """
+    Load the Gemini model for generating text responses.
+
+    Returns:
+        GenerativeModel: The loaded Gemini model.
+    """
+    model = GenerativeModel("gemini-1.5-flash")
+    return model
 
 
 def get_gemini_pro_text_response(
     model: GenerativeModel,
-    contents: str,
+    contents: str,  # pylint: disable=unused-argument
     generation_config: GenerationConfig,
     stream: bool = True,
 ):
+    """
+    Generate a text response using the Gemini model.
 
+    Args:
+        model (GenerativeModel): The Gemini model to use for generation.
+        contents (str): The input text content for generation.
+
+    Returns:
+        str: The generated text response.
+
+    """
     safety_settings = {
         HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
         HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
@@ -53,15 +69,16 @@ def get_gemini_pro_text_response(
     )
 
     final_response = []
-    for response in responses:
+    for res in responses:
         try:
-            # st.write(response.text)
-            final_response.append(response.text)
+            # st.write(res.text)
+            final_response.append(res.text)
         except IndexError:
-            # st.write(response)
+            # st.write(res)
             final_response.append("")
             continue
     return " ".join(final_response)
+
 
 st.header("Vertex AI Gemini API", divider="gray")
 text_model_pro = load_models()
@@ -78,9 +95,20 @@ cuisine = st.selectbox(
 
 dietary_preference = st.selectbox(
     "Do you have any dietary preferences?",
-    ("Diabetese", "Glueten free", "Halal", "Keto", "Kosher", "Lactose Intolerance", "Paleo", "Vegan", "Vegetarian", "None"),
+    (
+        "Diabetese",
+        "Glueten free",
+        "Halal",
+        "Keto",
+        "Kosher",
+        "Lactose Intolerance",
+        "Paleo",
+        "Vegan",
+        "Vegetarian",
+        "None",
+    ),
     index=None,
-    placeholder="Select your desired dietary preference."
+    placeholder="Select your desired dietary preference.",
 )
 
 allergy = st.text_input(
@@ -105,7 +133,7 @@ wine = st.radio(
     ("Red", "White", "None"),
 )
 
-max_output_tokens = 2048
+MAX_OUTPUT_TOKENS = 2048
 
 # Task 2.6
 # Modify this prompt with the custom chef prompt.
@@ -128,7 +156,7 @@ and the nutritional facts.
 
 config = {
     "temperature": 0.8,
-    "max_output_tokens": 2048,
+    "max_output_tokens": MAX_OUTPUT_TOKENS,
 }
 
 generate_t2t = st.button("Generate my recipes.", key="generate_t2t")
@@ -137,14 +165,14 @@ if generate_t2t and prompt:
     with st.spinner("Generating your recipes using Gemini..."):
         first_tab1, first_tab2 = st.tabs(["Recipes", "Prompt"])
         with first_tab1:
-            response = get_gemini_pro_text_response(
+            llm_response = get_gemini_pro_text_response(    # pylint: disable=invalid-name
                 text_model_pro,
                 prompt,
                 generation_config=config,
             )
-            if response:
+            if llm_response:
                 st.write("Your recipes:")
-                st.write(response)
-                logging.info(response)
+                st.write(llm_response)
+                logging.info(llm_response)
         with first_tab2:
             st.text(prompt)
