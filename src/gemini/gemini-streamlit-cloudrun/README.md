@@ -1,10 +1,13 @@
 # Gemini Streamlit App
 
 ```bash
-export PROJECT='<Your Google Cloud Project ID>'
-export REGION='<your region>'
+export PROJECT=$(gcloud config get-value project)
+export REGION=$(gcloud config get-value run/region)
 
-python3 -m venv gemini-streamlit
+export PROJECT=$GCP_PROJECT
+export REGION=$GCP_REGION
+
+python -m venv gemini-streamlit
 source gemini-streamlit/bin/activate
 pip install -r requirements.txt
 ```
@@ -24,6 +27,10 @@ To upload to Google Artifact Registry:
 ```bash
 export AR_REPO=chef-repo
 export SERVICE_NAME=chef-streamlit-app
+
+gcloud iam service-accounts create ${SERVICE_NAME} \
+  --description="Service account for Front-end Apps" \
+  --display-name="${SERVICE_NAME}"
 
 # Create a GAR repo
 gcloud artifacts repositories create "$AR_REPO" \
